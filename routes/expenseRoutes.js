@@ -1,14 +1,20 @@
-const router = require("express").Router();
-const auth = require("../middleware/authMiddleware");
+const express = require("express");
+const router = express.Router();
+const expenseController = require("../controllers/expenseController");
+const authMiddleware = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
-const {
-  addExpense,
-  getExpenses,
-  getByDate,
-} = require("../controllers/expenseController");
 
-router.post("/", auth, upload.single("bill"), addExpense);
-router.get("/", auth, getExpenses);
-router.get("/:date", auth, getByDate);
+router.post(
+  "/add",
+  authMiddleware,
+  upload.single("bill_image"),
+  expenseController.addExpense
+);
+
+router.get(
+  "/",
+  authMiddleware,
+  expenseController.getExpenses
+);
 
 module.exports = router;

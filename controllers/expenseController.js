@@ -1,42 +1,51 @@
 const db = require("../db/db");
 
+/* ================= ADD EXPENSE ================= */
 exports.addExpense = (req, res) => {
-  const { reason, amount } = req.body;
-  const bill = req.file?.filename || null;
+  const { amount, reason } = req.body;
+  const userId = req.user.id;
+  const billImage = req.file ? req.file.filename : null;
 
-  const sql =
-    "INSERT INTO expenses (reason, amount, bill_image, user_id) VALUES (?, ?, ?, ?)";
+  if (!amount || !reason) {
+    return res.status(400).json({ message: "Amount and reason required" });
+  }
+
+  const query = `
+    INSERT INTO expenses (amount, reason, bill_image, user_id)
+    VALUES (?, ?, ?, ?)
+  `;
 
   db.query(
-    sql,
-    [reason, amount, bill, req.user.id],
+    query,
+    [amount, reason, billImage, userId],
     (err) => {
       if (err) return res.status(500).json(err);
-      res.json({ message: "Expense added" });
+
+      res.status(201).json({ message: "Expense added" });
     }
   );
 };
 
+/* ================= GET EXPENSES ================= */
 exports.getExpenses = (req, res) => {
-  const sql =
-    "SELECT * FROM expenses WHERE user_id=? ORDER BY created_at DESC";
+  const userId = req.user.id;
+  const { date } = req.query;
 
-  db.query(sql, [req.user.id], (err, data) => {
+  let query = `
+    SELECT * FROM expenses
+    WHERE user_id = ?
+  `;
+  let values = [userId];
+
+  if (date) {
+    query += " AND DATE(created_at) = ?";
+    values.push(date);
+  }
+
+  query += " ORDER BY created_at DESC";
+
+  db.query(query, values, (err, result) => {
     if (err) return res.status(500).json(err);
-    res.json(data);
+    res.json(result);
   });
-};
-
-exports.getByDate = (req, res) => {
-  const sql =
-    "SELECT * FROM expenses WHERE user_id=? AND DATE(created_at)=?";
-
-  db.query(
-    sql,
-    [req.user.id, req.params.date],
-    (err, data) => {
-      if (err) return res.status(500).json(err);
-      res.json(data);
-    }
-  );
 };
