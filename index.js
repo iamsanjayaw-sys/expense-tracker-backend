@@ -1,11 +1,16 @@
-const express = require('express')
-const app = express()
-const port = 3000
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
 
-app.get('/', (req, res) => {
-  res.send('Hello')
-})
+const authRoutes = require("./routes/authRoutes");
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.use("/api/auth", authRoutes);
+
+app.listen(process.env.PORT, () => {
+  console.log("Server running on port " + process.env.PORT);
+});
