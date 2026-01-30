@@ -1,20 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const expenseController = require("../controllers/expenseController");
-const authMiddleware = require("../middleware/authMiddleware");
+const auth = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
+const {
+  getExpenses,
+  addExpense,
+} = require("../controllers/expenseController");
 
-router.post(
-  "/add",
-  authMiddleware,
-  upload.single("bill_image"),
-  expenseController.addExpense
-);
+router.get("/", auth, getExpenses);
 
-router.get(
-  "/",
-  authMiddleware,
-  expenseController.getExpenses
-);
+// 🔥 upload.single is REQUIRED
+router.post("/", auth, upload.single("bill_image"), addExpense);
 
 module.exports = router;
